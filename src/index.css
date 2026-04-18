@@ -1,0 +1,48 @@
+:root {
+  --accent: #39ff14;
+  --bg: #0a0c0a;
+  --fg: #e8e8e8;
+  --muted: #6a6a6a;
+  --error: #ff5555;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Syne', sans-serif;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#root {
+  height: 100%;
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.7) contrast(1.1);
+}

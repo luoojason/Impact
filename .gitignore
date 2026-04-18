@@ -1,0 +1,6 @@
+node_modules
+.env
+dist
+.sessions
+logs
+public/countries.geo.json

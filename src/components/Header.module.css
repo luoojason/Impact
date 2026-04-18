@@ -1,0 +1,31 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #0a0c0a;
+  border-bottom: 1px solid #1e221e;
+}
+
+.wordmark {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #e8ffe8;
+  letter-spacing: 0.1em;
+  text-decoration: underline;
+  text-decoration-color: #39ff14;
+  text-underline-offset: 4px;
+}
+
+.tagline {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: #6b7a6b;
+  letter-spacing: 0.05em;
+}

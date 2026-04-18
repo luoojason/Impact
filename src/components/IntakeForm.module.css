@@ -1,0 +1,112 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem;
+  min-height: 100vh;
+  background: #0a0c0a;
+}
+
+.form {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e8ffe8;
+  margin: 0 0 0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: #7a9a7a;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.input,
+.textarea {
+  background: #111511;
+  border: 1px solid #2a342a;
+  border-radius: 4px;
+  color: #c8e8c8;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #39ff14;
+  box-shadow: 0 0 0 2px rgba(57, 255, 20, 0.12);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkboxGroup,
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.checkboxLabel,
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  color: #b0ccb0;
+  cursor: pointer;
+}
+
+.checkbox,
+.radio {
+  accent-color: #39ff14;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.submit {
+  margin-top: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: #39ff14;
+  color: #0a0c0a;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-start;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s;
+}
+
+.submit:hover {
+  opacity: 0.88;
+}
