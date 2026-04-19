@@ -3,7 +3,6 @@ node_modules
 dist
 .sessions
 logs
-public/countries.geo.json
 data-prep/raw
 data-prep/*.tif
 data-prep/*.zip
