@@ -8,35 +8,59 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.25rem;
-  background: rgba(8, 10, 8, 0.92);
+  padding: 0 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
-.logo {
-  font-size: 1.1rem;
+.logoIcon {
   color: var(--accent);
-  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .wordmark {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
+  font-family: 'Spectral', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--fg);
-  letter-spacing: 0.12em;
+  letter-spacing: -0.01em;
+}
+
+.divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong);
 }
 
 .tagline {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.68rem;
-  color: var(--fg-dim);
-  letter-spacing: 0.04em;
+  font-family: 'Albert Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--fg-muted);
+  letter-spacing: 0.01em;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
 }

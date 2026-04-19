@@ -7,42 +7,32 @@ import styles from './WorldMap.module.css';
 import 'leaflet/dist/leaflet.css';
 
 const TYPE_COLORS = {
-  solar: '#ffcc00',
-  wind: '#60cfff',
-  hydro: '#4af',
-  geothermal: '#ff6b35',
-  storage: '#b57bee',
-  transmission: '#aaa',
-  general: '#39ff14',
+  solar:        '#d97706',
+  wind:         '#2563eb',
+  hydro:        '#0284c7',
+  geothermal:   '#dc2626',
+  storage:      '#7c3aed',
+  transmission: '#64748b',
+  general:      '#0a7a6a',
 };
 
-const TYPE_ICONS = {
-  solar: '☀',
-  wind: '💨',
-  hydro: '💧',
-  geothermal: '🌋',
-  storage: '🔋',
-  transmission: '⚡',
-  general: '📍',
+const TYPE_LABELS = {
+  solar: 'Solar', wind: 'Wind', hydro: 'Hydro',
+  geothermal: 'Geothermal', storage: 'Storage',
+  transmission: 'Transmission', general: 'General',
 };
 
 function makePinIcon(type) {
   const color = TYPE_COLORS[type] || TYPE_COLORS.general;
-  const icon = TYPE_ICONS[type] || '📍';
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:36px;height:36px;
-      border-radius:50% 50% 50% 0;
-      transform:rotate(-45deg);
-      background:${color};
-      border:2px solid rgba(255,255,255,0.3);
-      box-shadow:0 2px 12px rgba(0,0,0,0.5),0 0 0 3px rgba(255,255,255,0.1);
-      display:flex;align-items:center;justify-content:center;
-    "><span style="transform:rotate(45deg);font-size:15px;line-height:1">${icon}</span></div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -38],
+    html: `<svg width="26" height="34" viewBox="0 0 26 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 0C5.82 0 0 5.82 0 13C0 22.75 13 34 13 34C13 34 26 22.75 26 13C26 5.82 20.18 0 13 0Z" fill="${color}" fill-opacity="0.92"/>
+      <circle cx="13" cy="13" r="5.5" fill="white" fill-opacity="0.95"/>
+    </svg>`,
+    iconSize: [26, 34],
+    iconAnchor: [13, 34],
+    popupAnchor: [0, -36],
   });
 }
 
@@ -60,10 +50,10 @@ function FitBoundsLayer({ geojson, targetIso3 }) {
     if (allCoords.length < 2) return;
     const lats = allCoords.map((c) => c[0]);
     const lngs = allCoords.map((c) => c[1]);
-    map.fitBounds([
-      [Math.min(...lats), Math.min(...lngs)],
-      [Math.max(...lats), Math.max(...lngs)],
-    ], { padding: [40, 40] });
+    map.fitBounds(
+      [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]],
+      { padding: [48, 48] }
+    );
   }, [geojson, targetIso3]);
   return null;
 }
@@ -80,9 +70,9 @@ export default function WorldMap({ targetIso3, pins = [] }) {
     const iso = p.ISO_A3 || p.ISO_A3_EH || p.ADM0_A3;
     const isTarget = targetIso3 && iso && targetIso3.has(iso);
     return {
-      fillColor: isTarget ? '#39ff14' : '#111711',
-      fillOpacity: isTarget ? 0.25 : 0.6,
-      color: isTarget ? '#39ff14' : '#1e2a1e',
+      fillColor: isTarget ? '#0a7a6a' : '#0d1520',
+      fillOpacity: isTarget ? 0.32 : 0.55,
+      color: isTarget ? '#0a7a6a' : '#1a2840',
       weight: isTarget ? 1.5 : 0.5,
     };
   }
@@ -105,25 +95,56 @@ export default function WorldMap({ targetIso3, pins = [] }) {
         )}
         {pins.map((pin, i) => (
           <Marker key={i} position={[pin.lat, pin.lon]} icon={makePinIcon(pin.type || 'general')}>
-            <Popup minWidth={280} maxWidth={340}>
-              <div style={{ padding: '14px 16px', fontFamily: "'DM Mono', monospace" }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+            <Popup minWidth={240} maxWidth={320}>
+              <div style={{
+                padding: '16px 18px',
+                fontFamily: "'Albert Sans', sans-serif",
+              }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  marginBottom: '10px',
+                  background: `${TYPE_COLORS[pin.type] || TYPE_COLORS.general}18`,
+                  color: TYPE_COLORS[pin.type] || TYPE_COLORS.general,
+                }}>
                   <span style={{
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    background: `${TYPE_COLORS[pin.type] || TYPE_COLORS.general}22`,
-                    color: TYPE_COLORS[pin.type] || TYPE_COLORS.general,
-                    border: `1px solid ${TYPE_COLORS[pin.type] || TYPE_COLORS.general}44`,
-                  }}>{pin.type || 'general'}</span>
+                    width: '6px', height: '6px', borderRadius: '50%',
+                    background: TYPE_COLORS[pin.type] || TYPE_COLORS.general,
+                    flexShrink: 0,
+                  }} />
+                  {TYPE_LABELS[pin.type] || pin.type || 'General'}
                 </div>
-                <div style={{ fontSize: '14px', fontFamily: "'Syne', sans-serif", fontWeight: '700', color: '#e2ece2', marginBottom: '8px', lineHeight: '1.3' }}>{pin.name}</div>
-                <p style={{ fontSize: '11px', color: '#b8d0b8', lineHeight: '1.6', marginBottom: pin.risk ? '10px' : '0' }}>{pin.opportunity}</p>
+                <div style={{
+                  fontFamily: "'Spectral', serif",
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#191e2d',
+                  marginBottom: '8px',
+                  lineHeight: '1.3',
+                }}>{pin.name}</div>
+                <p style={{
+                  fontSize: '12.5px',
+                  color: '#58627a',
+                  lineHeight: '1.65',
+                  marginBottom: pin.risk ? '10px' : '0',
+                }}>{pin.opportunity}</p>
                 {pin.risk && (
-                  <div style={{ fontSize: '10px', color: '#ff9955', lineHeight: '1.5', padding: '6px 8px', background: 'rgba(255,100,50,0.08)', borderRadius: '4px', borderLeft: '2px solid rgba(255,100,50,0.4)' }}>
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#a85510',
+                    lineHeight: '1.55',
+                    padding: '7px 10px',
+                    background: '#fff8ed',
+                    borderRadius: '5px',
+                    marginTop: '2px',
+                  }}>
                     ⚠ {pin.risk}
                   </div>
                 )}
@@ -135,3 +156,5 @@ export default function WorldMap({ targetIso3, pins = [] }) {
     </div>
   );
 }
+
+export { TYPE_COLORS, TYPE_LABELS };

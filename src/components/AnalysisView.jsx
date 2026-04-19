@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import WorldMap from './WorldMap.jsx';
+import { TYPE_COLORS, TYPE_LABELS } from './WorldMap.jsx';
 import useSSE from '../hooks/useSSE.js';
 import { nameToIso3 } from '../lib/countryUtils.js';
 import styles from './AnalysisView.module.css';
@@ -18,6 +19,8 @@ const TOOL_LABELS = {
   get_comparable_projects: 'Comparable projects',
   generate_document: 'Document generation',
 };
+
+const PIN_TYPES = ['solar', 'wind', 'hydro', 'geothermal', 'storage', 'transmission'];
 
 export default function AnalysisView({ streamId, intake, onDone, onReplayDetected }) {
   const [toolEvents, setToolEvents] = useState([]);
@@ -68,11 +71,15 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
   const passedTools = completedTools.filter((e) => e.ok === true);
   const failedTools = completedTools.filter((e) => e.ok === false);
   const pendingTools = toolEvents.filter((e) => e.ok === undefined);
+  const progress = Math.min(100, (completedTools.length / 11) * 100);
+
+  const activePinTypes = [...new Set(pins.map((p) => p.type).filter(Boolean))];
 
   return (
     <div className={styles.layout}>
       <div className={styles.mapArea}>
         <WorldMap targetIso3={targetIso3} pins={pins} />
+
         {!done && (
           <div className={styles.mapOverlay}>
             <div className={styles.analyzing}>
@@ -81,52 +88,67 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
             </div>
           </div>
         )}
+
         {done && pins.length > 0 && (
           <div className={styles.pinLegend}>
             <span className={styles.legendLabel}>{pins.length} opportunity sites identified</span>
-            <span className={styles.legendHint}>Click pins to explore</span>
+            <span className={styles.legendHint}>· Click pins to explore</span>
           </div>
         )}
       </div>
 
       <aside className={styles.sidebar}>
         <div className={styles.sidebarInner}>
-          {/* Header */}
+          {/* Status header */}
           <div className={styles.sidebarHeader}>
-            <div className={styles.sidebarTitle}>
-              {done ? 'Analysis Complete' : 'Live Analysis'}
+            <div className={styles.statusRow}>
+              <div className={styles.sidebarTitle}>
+                {done ? 'Analysis Complete' : 'Live Analysis'}
+              </div>
+              <div className={`${styles.statusPill} ${done ? styles.statusPillDone : styles.statusPillRunning}`}>
+                <span className={styles.statusDot} />
+                {done ? 'Done' : 'Running'}
+              </div>
             </div>
             {!done && (
               <div className={styles.progress}>
-                <div className={styles.progressBar} style={{ width: `${Math.min(100, (completedTools.length / 11) * 100)}%` }} />
+                <div className={styles.progressBar} style={{ width: `${progress}%` }} />
               </div>
             )}
           </div>
 
-          {/* Brief summary */}
+          {/* Investment brief */}
           {brief && (
             <div className={styles.briefCard}>
               <div className={styles.cardLabel}>Investment Brief</div>
-              <p className={styles.briefText}>{brief.slice(0, 420)}{brief.length > 420 ? '…' : ''}</p>
+              <p className={styles.briefText}>
+                {brief.slice(0, 420)}{brief.length > 420 ? '…' : ''}
+              </p>
             </div>
           )}
 
-          {/* Live tool feed */}
+          {/* Active tool */}
           {!done && pendingTools.length > 0 && (
             <div className={styles.activeTool}>
               <span className={styles.spinner} />
-              <span className={styles.activeToolName}>{TOOL_LABELS[pendingTools[0].name] || pendingTools[0].name}</span>
+              <span className={styles.activeToolName}>
+                {TOOL_LABELS[pendingTools[0].name] || pendingTools[0].name}
+              </span>
             </div>
           )}
 
-          {/* Tool status grid */}
+          {/* Data sources */}
           {toolEvents.length > 0 && (
             <div className={styles.toolGrid}>
               <div className={styles.toolGridLabel}>Data Sources</div>
               <div className={styles.toolList}>
-                {toolEvents.filter(e => e.name !== 'generate_document').map((ev) => (
+                {toolEvents.filter((e) => e.name !== 'generate_document').map((ev) => (
                   <div key={ev.id} className={styles.toolRow}>
-                    <span className={`${styles.toolDot} ${ev.ok === undefined ? styles.dotPending : ev.ok ? styles.dotOk : styles.dotFail}`} />
+                    <span className={`${styles.toolDot} ${
+                      ev.ok === undefined ? styles.dotPending
+                      : ev.ok ? styles.dotOk
+                      : styles.dotFail
+                    }`} />
                     <span className={styles.toolRowName}>{TOOL_LABELS[ev.name] || ev.name}</span>
                     {ev.ok === undefined && <span className={styles.miniSpinner} />}
                     {ev.ok === true && <span className={styles.toolCheck}>✓</span>}
@@ -147,6 +169,24 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
           {agentError && (
             <div className={styles.errorBox}>
               <strong>Error:</strong> {agentError}
+            </div>
+          )}
+
+          {/* Pin type legend */}
+          {done && activePinTypes.length > 0 && (
+            <div className={styles.layerLegend}>
+              <div className={styles.layerLegendTitle}>Investment Types</div>
+              <div className={styles.layerItems}>
+                {activePinTypes.map((type) => (
+                  <div key={type} className={styles.layerItem}>
+                    <span
+                      className={styles.layerSwatch}
+                      style={{ background: TYPE_COLORS[type] || TYPE_COLORS.general }}
+                    />
+                    {TYPE_LABELS[type] || type}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
