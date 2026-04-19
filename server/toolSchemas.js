@@ -157,6 +157,22 @@ export const schemas = [
             required: ['claim', 'tool_use_id']
           },
           minItems: 1
+        },
+        pins: {
+          type: 'array',
+          description: 'Array of 3–6 specific sub-regional investment opportunity pins to display on the map. Each pin marks a concrete location with investment rationale.',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Short location name (e.g. "Turkana Wind Corridor")' },
+              lat: { type: 'number', description: 'Latitude of the opportunity site' },
+              lon: { type: 'number', description: 'Longitude of the opportunity site' },
+              type: { type: 'string', enum: ['solar', 'wind', 'hydro', 'geothermal', 'storage', 'transmission', 'general'], description: 'Investment type' },
+              opportunity: { type: 'string', description: '2-3 sentences on why this specific location is compelling for the investment — cite actual data from tool results' },
+              risk: { type: 'string', description: '1-2 sentences on the main local risk factor at this specific location' }
+            },
+            required: ['name', 'lat', 'lon', 'type', 'opportunity']
+          }
         }
       },
       required: ['brief', 'risks', 'roadmap', 'regulatory', 'financial', 'funders', 'citations']

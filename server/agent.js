@@ -55,7 +55,7 @@ export async function runAgent(streamId, intake) {
 
   try {
     const messages = [{ role: 'user', content: formatIntake(intake) }];
-    const budget = { callsUsed: 0, maxCalls: 24, iter: 0, maxIters: 10 };
+    const budget = { callsUsed: 0, maxCalls: 30, iter: 0, maxIters: 12 };
     const gLimit = globalLimit(3);
 
     while (budget.iter < budget.maxIters) {
@@ -82,7 +82,7 @@ export async function runAgent(streamId, intake) {
       if (resp.stop_reason === 'end_turn' && toolUses.length === 0) {
         const session = getSession(streamId);
         if (session && session.lastDocumentSections) {
-          emit({ type: 'done', data: { sections: session.lastDocumentSections } });
+          emit({ type: 'done', data: { sections: session.lastDocumentSections, pins: session.lastDocumentPins ?? [] } });
         } else {
           emit({ type: 'error', data: { where: 'final', message: 'ended without generate_document' } });
         }
@@ -109,7 +109,8 @@ export async function runAgent(streamId, intake) {
             const ctx = isGenerateDoc
               ? { session, emit: (evt) => appendEvent(streamId, evt) }
               : undefined;
-            result = await withTimeout(entry.handler(tu.input, ctx), 8000);
+            const toolTimeout = tu.name === 'get_conflict_data' ? 50000 : 8000;
+            result = await withTimeout(entry.handler(tu.input, ctx), toolTimeout);
           }
 
           budget.callsUsed++;
@@ -140,7 +141,7 @@ export async function runAgent(streamId, intake) {
     // Final check: if loop exhausted without done event
     const session = getSession(streamId);
     if (session && session.lastDocumentSections) {
-      emit({ type: 'done', data: { sections: session.lastDocumentSections } });
+      emit({ type: 'done', data: { sections: session.lastDocumentSections, pins: session.lastDocumentPins ?? [] } });
     } else if (budget.callsUsed >= budget.maxCalls || budget.iter >= budget.maxIters) {
       emit({ type: 'error', data: { where: 'budget', message: 'budget exhausted without generate_document' } });
     }

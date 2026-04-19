@@ -3,29 +3,40 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 1000;
+  height: var(--header-h);
   display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  background: #0a0c0a;
-  border-bottom: 1px solid #1e221e;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: rgba(8, 10, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo {
+  font-size: 1.1rem;
+  color: var(--accent);
+  line-height: 1;
 }
 
 .wordmark {
   font-family: 'Syne', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: #e8ffe8;
-  letter-spacing: 0.1em;
-  text-decoration: underline;
-  text-decoration-color: #39ff14;
-  text-underline-offset: 4px;
+  color: var(--fg);
+  letter-spacing: 0.12em;
 }
 
 .tagline {
   font-family: 'DM Mono', monospace;
-  font-size: 0.7rem;
-  color: #6b7a6b;
-  letter-spacing: 0.05em;
+  font-size: 0.68rem;
+  color: var(--fg-dim);
+  letter-spacing: 0.04em;
 }

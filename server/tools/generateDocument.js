@@ -52,9 +52,14 @@ export async function handler(input, context = {}) {
 
   const markdown = assembleMarkdown(input, session ?? {});
 
+  const pins = input.pins ?? [];
+  if (session) {
+    session.lastDocumentPins = pins;
+  }
+
   return {
     ok: true,
-    data: { markdown, sections_accepted: true },
+    data: { markdown, sections_accepted: true, pins },
     source: 'ImpactGrid citation-validated',
     url: 'local',
   };

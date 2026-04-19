@@ -29,4 +29,18 @@ When you call generate_document, populate all six sections:
 
 ## FINAL INSTRUCTION
 
-After gathering sufficient data from the tools above, you MUST call generate_document with all six sections populated and a citations array linking every material claim to its source tool_use_id. This is non-negotiable — do not end your turn without calling generate_document.`;
+After gathering sufficient data from the tools above, you MUST call generate_document with all six sections populated and a citations array linking every material claim to its source tool_use_id. This is non-negotiable — do not end your turn without calling generate_document.
+
+## MAP PINS
+
+When calling generate_document, populate the pins array with 3–6 specific sub-regional investment opportunity markers. Each pin must:
+- Reference a concrete location (district, corridor, valley, coastal zone, etc.) within the target country/region
+- Have accurate latitude/longitude for that specific location
+- Cite specific data from successful tool calls (e.g. "Solar irradiance of X kWh/m²/day from NASA POWER data", "Low conflict density per ACLED data")
+- Describe the specific investment type that fits that location
+- Note the main local risk (geological, conflict, infrastructure, regulatory)
+
+Example pins for Kenya solar investment:
+- Turkana Wind Corridor (lat: 3.5, lon: 36.1): best wind in East Africa
+- Garissa Solar Park zone (lat: -0.45, lon: 39.6): highest DNI in Kenya
+- Naivasha Geothermal Belt (lat: -0.72, lon: 36.43): proven geothermal resource`;

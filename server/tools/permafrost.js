@@ -1,41 +1,38 @@
-// SEDAC Global Permafrost Zones requires OAuth — using WorldPop REST as proxy.
-// High-latitude + high population density = infrastructure overlap risk indicator.
 import { request } from './httpClient.js';
 
+function classifyPermafrost(lat) {
+  if (lat >= 60) return { zone: 'continuous', risk: 'high' };
+  if (lat >= 50) return { zone: 'discontinuous', risk: 'medium' };
+  if (lat >= 40) return { zone: 'sporadic', risk: 'low' };
+  return { zone: 'none', risk: 'negligible' };
+}
+
 export async function handler({ country, lat, lon }) {
-  if (lat == null || lon == null) {
-    return { ok: false, reason: 'missing_key', message: 'lat and lon are required' };
+  let effectiveLat = lat != null ? parseFloat(lat) : null;
+
+  if (effectiveLat == null && country) {
+    const geoResult = await request({ url: `https://api.worldbank.org/v2/country/${country.trim().toUpperCase()}?format=json`, timeoutMs: 8000 });
+    const info = geoResult.data?.[1]?.[0];
+    effectiveLat = info?.latitude != null ? parseFloat(info.latitude) : null;
+    lon = info?.longitude != null ? parseFloat(info.longitude) : lon;
   }
 
-  const url = `https://api.worldpop.org/v1/services/stats?dataset=wpgppop&year=2020&geojson={"type":"Point","coordinates":[${lon},${lat}]}`;
-  const result = await request({ url });
-
-  if (!result.ok) {
-    return { ok: false, reason: result.reason, message: result.message, source: 'WorldPop' };
+  if (effectiveLat == null) {
+    return { ok: false, reason: 'missing_key', message: 'lat/lon or country required' };
   }
 
-  const pop = result.data?.data?.total_population ?? result.data?.pop ?? null;
-
-  if (pop == null) {
-    return {
-      ok: false,
-      reason: 'parse_error',
-      message: 'Could not extract population from WorldPop response',
-      source: 'WorldPop',
-      url,
-    };
-  }
+  const { zone, risk } = classifyPermafrost(effectiveLat);
 
   return {
     ok: true,
     data: {
-      permafrost_zone_index: 'n/a',
-      note: 'proxy via WorldPop population density — high lat + high density indicates infrastructure overlap risk',
-      population_density_proxy: pop,
-      lat,
-      lon,
+      permafrost_zone: zone,
+      permafrost_risk: risk,
+      note: 'Latitude-based classification: ≥60°N continuous, ≥50°N discontinuous, ≥40°N sporadic',
+      lat: effectiveLat,
+      lon: lon ?? null,
     },
-    source: 'WorldPop (SEDAC proxy)',
-    url,
+    source: 'Latitude-based permafrost classification',
+    url: null,
   };
 }

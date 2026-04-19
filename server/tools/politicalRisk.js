@@ -4,10 +4,10 @@ export default async function handler({ country }) {
   if (!country) return { ok: false, reason: 'missing_country', url: null };
 
   const iso2 = country.trim().toUpperCase();
-  const url = `https://api.worldbank.org/v2/country/${iso2}/indicator/PV.EST?format=json&per_page=5`;
+  const url = `https://api.worldbank.org/v2/country/${iso2}/indicator/IQ.CPA.PROT.XQ?format=json&per_page=5`;
 
   const result = await request({ url, timeoutMs: 8000 });
-  if (!result.ok) return { ok: false, reason: result.reason ?? 'request_failed', url };
+  if (!result.ok) return { ok: false, reason: result.reason ?? 'request_failed', status: result.status, url };
 
   const parsed = result.data;
 
@@ -19,7 +19,7 @@ export default async function handler({ country }) {
 
   return {
     ok: true,
-    data: { date: latest.date, value: latest.value, indicator: 'PV.EST' },
+    data: { date: latest.date, value: latest.value, indicator: 'IQ.CPA.PROT.XQ' },
     source: 'World Bank',
     url,
   };
