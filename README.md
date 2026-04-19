@@ -56,5 +56,4 @@ If `.sessions/demo-fixture.jsonl` exists, that file is replayed line by line. Ot
 - **12-call budget cap**: The agentic loop is hard-capped at 12 tool calls and 6 iterations. Multi-country analyses with many data dimensions may be truncated. The demo script is designed to stay within budget.
 - **SEDAC GPZ replaced**: The NASA SEDAC Global Permafrost Zones dataset requires OAuth not suitable for a demo. The `get_permafrost_data` tool uses the WorldPop REST API as a proxy for ground-stability risk.
 - **GSA/GWA fallback**: Global Solar Atlas and Global Wind Atlas ArcGIS endpoints are unstable in automated contexts. `get_renewable_resource_potential` uses the NASA POWER climatology API directly.
-- **Sea level portal**: The NASA Sea Level Change Portal API is undocumented and not reliably accessible outside a browser. `get_sea_level_projections` returns `ok:false` with an explanatory message when unavailable; the final brief notes the gap explicitly.
 - **Approximate cost**: One full run costs roughly $0.50–$1.50 in Anthropic API credits at current pricing (claude-sonnet-4 at 4096 tokens/turn × up to 6 iterations).

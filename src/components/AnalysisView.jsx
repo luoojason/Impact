@@ -15,7 +15,6 @@ const TOOL_LABELS = {
   get_energy_access_gap: 'Energy access',
   get_conflict_data: 'Conflict events',
   get_deforestation_data: 'Deforestation',
-  get_sea_level_projections: 'Sea level risk',
   get_comparable_projects: 'Comparable projects',
   generate_document: 'Document generation',
 };

@@ -11,7 +11,6 @@ const NAME_TO_DESC = {
   get_conflict_data: 'Conflict events from ACLED',
   get_deforestation_data: 'Tree cover loss from Global Forest Watch',
   get_food_insecurity_data: 'Food insecurity data from IPC',
-  get_sea_level_projections: 'Sea level projections from NASA',
   get_comparable_projects: 'Comparable projects from World Bank API',
   generate_document: 'Generating structured investment document',
 };

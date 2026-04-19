@@ -6,7 +6,6 @@ import political from './politicalRisk.js';
 import energy from './energyAccess.js';
 import { handler as conflict } from './conflictData.js';
 import { handler as deforestation } from './deforestation.js';
-import { handler as seaLevel } from './seaLevel.js';
 import comparable from './comparableProjects.js';
 import { handler as generateDocument } from './generateDocument.js';
 
@@ -59,13 +58,6 @@ export const registry = {
   get_deforestation_data: {
     handler: (input) => deforestation({
       country: input.country_iso3,
-    }),
-  },
-  get_sea_level_projections: {
-    handler: (input) => seaLevel({
-      country: input.country_iso3,
-      lat: input.latitude,
-      lon: input.longitude,
     }),
   },
   get_comparable_projects: {

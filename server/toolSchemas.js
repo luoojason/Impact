@@ -97,19 +97,6 @@ export const schemas = [
     }
   },
   {
-    name: 'get_sea_level_projections',
-    description: 'Fetch sea level rise projections for a coastal location from NASA Sea Level Change Portal.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        latitude: { type: 'number', description: 'Latitude of the coastal site' },
-        longitude: { type: 'number', description: 'Longitude of the coastal site' },
-        country_iso3: { type: 'string', description: 'ISO 3166-1 alpha-3 country code (for labeling)' }
-      },
-      required: ['latitude', 'longitude', 'country_iso3']
-    }
-  },
-  {
     name: 'get_comparable_projects',
     description: 'Fetch comparable World Bank energy projects for a country.',
     input_schema: {
