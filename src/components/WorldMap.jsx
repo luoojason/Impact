@@ -23,17 +23,6 @@ const TYPE_LABELS = {
   transmission: 'Transmission', general: 'General',
 };
 
-const OPPORTUNITY_LEGEND = [
-  { label: 'High suitability', color: '#16a34a' },
-  { label: 'Moderate',         color: '#facc15' },
-  { label: 'Lower suitability',color: '#f97316' },
-];
-
-const RISK_LEGEND = [
-  { label: 'Higher risk',  color: '#dc2626' },
-  { label: 'Moderate',     color: '#facc15' },
-  { label: 'Lower risk',   color: '#86efac' },
-];
 
 function makePinIcon(type, dimmed) {
   const color = TYPE_COLORS[type] || TYPE_COLORS.general;
@@ -98,7 +87,6 @@ export default function WorldMap({
 }) {
   const [geojson, setGeojson]           = useState(null);
   const [heatVisible, setHeatVisible]   = useState(initialHeatmap);
-  const [heatMode, setHeatMode]         = useState('opportunity'); // 'opportunity' | 'risk'
   const [panelOpen, setPanelOpen]       = useState(false);
   const [activeTypes, setActiveTypes]   = useState(() => new Set(Object.keys(TYPE_COLORS)));
   const markerRefs                      = useRef({});
@@ -144,7 +132,6 @@ export default function WorldMap({
 
   const pinTypes = [...new Set(pins.map((p) => p.type || 'general'))];
   const visiblePins = pins.filter((p) => activeTypes.has(p.type || 'general'));
-  const legend = heatMode === 'risk' ? RISK_LEGEND : OPPORTUNITY_LEGEND;
 
   return (
     <div className={styles.mapWrapper}>
@@ -160,7 +147,7 @@ export default function WorldMap({
           </>
         )}
         {heatVisible && visiblePins.length > 0 && (
-          <GeoHeatLayer pins={visiblePins} visible={heatVisible} mode={heatMode} />
+          <GeoHeatLayer pins={visiblePins} visible={heatVisible} />
         )}
         <MapController pins={pins} markerRefs={markerRefs} mapControlRef={mapControlRef} />
         {pins.map((pin, i) => {
@@ -284,22 +271,6 @@ export default function WorldMap({
                 </label>
               </div>
 
-              {/* Heatmap mode */}
-              {heatVisible && (
-                <div className={styles.panelSection}>
-                  <div className={styles.panelSectionLabel}>Heatmap mode</div>
-                  <div className={styles.modeRow}>
-                    <button
-                      className={`${styles.modeBtn} ${heatMode === 'opportunity' ? styles.modeBtnActive : ''}`}
-                      onClick={() => setHeatMode('opportunity')}
-                    >Opportunity</button>
-                    <button
-                      className={`${styles.modeBtn} ${heatMode === 'risk' ? styles.modeBtnActive : ''}`}
-                      onClick={() => setHeatMode('risk')}
-                    >Risk</button>
-                  </div>
-                </div>
-              )}
 
               {/* Investment type filter */}
               {pinTypes.length > 1 && (
@@ -319,19 +290,15 @@ export default function WorldMap({
               )}
 
               {/* Legend */}
-              {heatVisible && (
+              {heatVisible && visiblePins.length > 0 && (
                 <div className={styles.panelSection}>
-                  <div className={styles.panelSectionLabel}>Legend</div>
-                  <div className={styles.gradientBar} style={{
-                    background: heatMode === 'opportunity'
-                      ? 'linear-gradient(to right, #f97316, #facc15, #16a34a)'
-                      : 'linear-gradient(to right, #dc2626, #facc15, #86efac)',
-                  }} />
+                  <div className={styles.panelSectionLabel}>Intensity legend</div>
+                  <div className={styles.legendNote}>Glow size &amp; opacity = renewable potential score</div>
                   <div className={styles.legendRows}>
-                    {legend.map(({ label, color }) => (
-                      <div key={label} className={styles.legendRow}>
-                        <span className={styles.legendDot} style={{ background: color }} />
-                        {label}
+                    {[...new Set(visiblePins.map((p) => p.type || 'general'))].map((type) => (
+                      <div key={type} className={styles.legendRow}>
+                        <span className={styles.legendDot} style={{ background: TYPE_COLORS[type] || TYPE_COLORS.general }} />
+                        {TYPE_LABELS[type] || type}
                       </div>
                     ))}
                   </div>

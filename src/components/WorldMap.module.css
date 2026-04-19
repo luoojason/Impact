@@ -190,6 +190,14 @@
   margin-bottom: 4px;
 }
 
+.legendNote {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
 .legendRows {
   display: flex;
   flex-direction: column;
