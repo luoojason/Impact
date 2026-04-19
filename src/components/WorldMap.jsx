@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { findFeature, bboxOfFeature } from '../lib/countryUtils.js';
-import GeoHeatLayer from './HeatmapLayer.jsx';
+import DataGridLayer from './DataGridLayer.jsx';
 import BubbleLayer from './BubbleLayer.jsx';
 import SparkLine from './SparkLine.jsx';
 import styles from './WorldMap.module.css';
@@ -88,6 +88,7 @@ export default function WorldMap({
 }) {
   const [geojson, setGeojson]           = useState(null);
   const [heatVisible, setHeatVisible]   = useState(initialHeatmap);
+  const [heatDataset, setHeatDataset]   = useState('solar');
   const [bubbleVisible, setBubbleVisible] = useState(true);
   const [panelOpen, setPanelOpen]       = useState(false);
   const [activeTypes, setActiveTypes]   = useState(() => new Set(Object.keys(TYPE_COLORS)));
@@ -100,6 +101,18 @@ export default function WorldMap({
   useEffect(() => {
     if (pins.length > 0) setHeatVisible(true);
   }, [pins.length]);
+
+  // Default the heatmap dataset to the dominant pin type when pins arrive
+  useEffect(() => {
+    if (pins.length === 0) return;
+    const counts = {};
+    for (const p of pins) {
+      const t = (p.type || 'general').toLowerCase();
+      if (t === 'solar' || t === 'wind') counts[t] = (counts[t] || 0) + 1;
+    }
+    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (best) setHeatDataset(best[0]);
+  }, [pins]);
 
   // Update activeTypes when new pin types appear
   useEffect(() => {
@@ -148,9 +161,7 @@ export default function WorldMap({
             <FitBoundsLayer geojson={geojson} targetIso3={targetIso3} />
           </>
         )}
-        {heatVisible && visiblePins.length > 0 && (
-          <GeoHeatLayer pins={visiblePins} visible={heatVisible} />
-        )}
+        <DataGridLayer type={heatDataset} visible={heatVisible} />
         {bubbleVisible && visiblePins.length > 0 && (
           <BubbleLayer pins={visiblePins} visible={bubbleVisible} />
         )}
@@ -275,12 +286,28 @@ export default function WorldMap({
                   />
                 </label>
                 <label className={styles.switchRow}>
-                  <span>Intensity heatmap</span>
+                  <span>Resource heatmap</span>
                   <button
                     className={`${styles.toggle} ${heatVisible ? styles.toggleOn : ''}`}
                     onClick={() => setHeatVisible((v) => !v)}
                   />
                 </label>
+                {heatVisible && (
+                  <div className={styles.datasetChips}>
+                    {[
+                      { key: 'solar', label: 'Solar (GHI)' },
+                      { key: 'wind',  label: 'Wind (10m)' },
+                    ].map((d) => (
+                      <button
+                        key={d.key}
+                        className={`${styles.datasetChip} ${heatDataset === d.key ? styles.datasetChipOn : ''}`}
+                        onClick={() => setHeatDataset(d.key)}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
 
@@ -302,17 +329,27 @@ export default function WorldMap({
               )}
 
               {/* Legend */}
-              {heatVisible && visiblePins.length > 0 && (
+              {heatVisible && (
                 <div className={styles.panelSection}>
-                  <div className={styles.panelSectionLabel}>Intensity legend</div>
-                  <div className={styles.legendNote}>Glow size &amp; opacity = renewable potential score</div>
-                  <div className={styles.legendRows}>
-                    {[...new Set(visiblePins.map((p) => p.type || 'general'))].map((type) => (
-                      <div key={type} className={styles.legendRow}>
-                        <span className={styles.legendDot} style={{ background: TYPE_COLORS[type] || TYPE_COLORS.general }} />
-                        {TYPE_LABELS[type] || type}
-                      </div>
-                    ))}
+                  <div className={styles.panelSectionLabel}>
+                    {heatDataset === 'solar' ? 'Solar GHI' : 'Wind speed (10m)'}
+                  </div>
+                  <div className={styles.legendNote}>
+                    {heatDataset === 'solar'
+                      ? 'Global Solar Atlas — kWh/m²/day'
+                      : 'WorldClim — annual mean m/s'}
+                  </div>
+                  <div
+                    className={styles.gradientBar}
+                    style={{
+                      background: heatDataset === 'solar'
+                        ? 'linear-gradient(to right, #0f172a, #8b5c2b, #ea580c, #f9a825, #facc15, #fef08a)'
+                        : 'linear-gradient(to right, #0f172a, #1e3a8a, #2563eb, #0ea5e9, #a5f3fc, #ecfeff)',
+                    }}
+                  />
+                  <div className={styles.gradientLabels}>
+                    <span>low</span>
+                    <span>high</span>
                   </div>
                 </div>
               )}

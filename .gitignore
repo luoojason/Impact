@@ -4,3 +4,8 @@ dist
 .sessions
 logs
 public/countries.geo.json
+data-prep/raw
+data-prep/*.tif
+data-prep/*.zip
+data-prep/**/*.tif
+data-prep/**/*.zip
