@@ -5,11 +5,23 @@ let cached = null;
 let inflight = null;
 
 async function fetchToken(body) {
-  const res = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  let res;
+  try {
+    res = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    const e = new Error(err.name === 'AbortError' ? 'acled_oauth_timeout' : `acled_oauth_network: ${err.message}`);
+    e.reason = 'timeout';
+    throw e;
+  }
+  clearTimeout(timer);
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     const err = new Error(`acled_oauth_${res.status}`);

@@ -121,9 +121,7 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
           {brief && (
             <div className={styles.briefCard}>
               <div className={styles.cardLabel}>Investment Brief</div>
-              <p className={styles.briefText}>
-                {brief.slice(0, 420)}{brief.length > 420 ? '…' : ''}
-              </p>
+              <p className={styles.briefText}>{brief}</p>
             </div>
           )}
 

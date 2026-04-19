@@ -72,7 +72,9 @@ export default function App() {
     <>
       {isReplay && <ReplayBanner />}
       <Header />
-      {phase === 'intake' && <IntakeForm onSubmit={handleSubmit} error={error} submitting={submitting} />}
+      {phase === 'intake' && (
+        <IntakeForm onSubmit={handleSubmit} error={error} submitting={submitting} />
+      )}
       {phase === 'analyzing' && (
         <AnalysisView
           streamId={streamId}
