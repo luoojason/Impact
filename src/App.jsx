@@ -4,6 +4,7 @@ import IntakeForm from './components/IntakeForm.jsx';
 import AnalysisView from './components/AnalysisView.jsx';
 import DeliverablesTabs from './components/DeliverablesTabs.jsx';
 import ReplayBanner from './components/ReplayBanner.jsx';
+import { DEMO_INTAKE } from './demo/demoData.js';
 
 export default function App() {
   const [phase, setPhase] = useState('intake');
@@ -14,6 +15,7 @@ export default function App() {
   const [isReplay, setIsReplay] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   async function handleSubmit(intakeData) {
     setIntake(intakeData);
@@ -60,6 +62,13 @@ export default function App() {
     }
   }
 
+  function handleDemo() {
+    setIntake(DEMO_INTAKE);
+    setError(null);
+    setDemoMode(true);
+    setPhase('analyzing');
+  }
+
   function handleDone(sections, deliveredPins) {
     setDeliverables(sections);
     setPins(deliveredPins ?? []);
@@ -75,7 +84,7 @@ export default function App() {
       {isReplay && <ReplayBanner />}
       <Header />
       {phase === 'intake' && (
-        <IntakeForm onSubmit={handleSubmit} error={error} submitting={submitting} />
+        <IntakeForm onSubmit={handleSubmit} onDemo={handleDemo} error={error} submitting={submitting} />
       )}
       {phase === 'analyzing' && (
         <AnalysisView
@@ -83,6 +92,7 @@ export default function App() {
           intake={intake}
           onDone={handleDone}
           onReplayDetected={handleReplayDetected}
+          demoMode={demoMode}
         />
       )}
       {phase === 'deliverables' && (

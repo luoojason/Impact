@@ -28,7 +28,7 @@ function GlobeIcon() {
   );
 }
 
-export default function IntakeForm({ onSubmit, error, submitting }) {
+export default function IntakeForm({ onSubmit, onDemo, error, submitting }) {
   const [form, setForm] = useState({
     companyName: '',
     companyDesc: '',
@@ -240,6 +240,14 @@ export default function IntakeForm({ onSubmit, error, submitting }) {
               <span>Initiate Analysis</span>
             )}
             {!submitting && <span className={styles.submitArrow}>→</span>}
+          </button>
+          <button
+            type="button"
+            className={styles.demoBtn}
+            onClick={onDemo}
+            disabled={submitting}
+          >
+            Try Demo
           </button>
           {error && <p className={styles.error}>{error}</p>}
         </div>

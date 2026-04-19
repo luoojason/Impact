@@ -2,6 +2,7 @@ import { useState } from 'react';
 import WorldMap from './WorldMap.jsx';
 import { TYPE_COLORS, TYPE_LABELS } from './WorldMap.jsx';
 import useSSE from '../hooks/useSSE.js';
+import useDemoSSE from '../hooks/useDemoSSE.js';
 import { nameToIso3 } from '../lib/countryUtils.js';
 import styles from './AnalysisView.module.css';
 
@@ -21,7 +22,7 @@ const TOOL_LABELS = {
 
 const PIN_TYPES = ['solar', 'wind', 'hydro', 'geothermal', 'storage', 'transmission'];
 
-export default function AnalysisView({ streamId, intake, onDone, onReplayDetected }) {
+export default function AnalysisView({ streamId, intake, onDone, onReplayDetected, demoMode }) {
   const [toolEvents, setToolEvents] = useState([]);
   const [brief, setBrief] = useState('');
   const [pins, setPins] = useState([]);
@@ -65,7 +66,8 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
     },
   };
 
-  useSSE(streamId, handlers);
+  useSSE(demoMode ? null : streamId, handlers);
+  useDemoSSE({ enabled: !!demoMode, handlers });
 
   const completedTools = toolEvents.filter((e) => e.ok !== undefined);
   const passedTools = completedTools.filter((e) => e.ok === true);
