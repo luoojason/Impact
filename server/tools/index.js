@@ -6,7 +6,6 @@ import political from './politicalRisk.js';
 import energy from './energyAccess.js';
 import { handler as conflict } from './conflictData.js';
 import { handler as deforestation } from './deforestation.js';
-import { handler as food } from './foodInsecurity.js';
 import { handler as seaLevel } from './seaLevel.js';
 import comparable from './comparableProjects.js';
 import { handler as generateDocument } from './generateDocument.js';
@@ -53,16 +52,12 @@ export const registry = {
   },
   get_conflict_data: {
     handler: (input) => conflict({
-      country: input.country_name,
+      country_iso2: input.country_iso2,
+      country_iso3: input.country_iso3,
     }),
   },
   get_deforestation_data: {
     handler: (input) => deforestation({
-      country: input.country_iso3,
-    }),
-  },
-  get_food_insecurity_data: {
-    handler: (input) => food({
       country: input.country_iso3,
     }),
   },

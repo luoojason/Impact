@@ -10,6 +10,7 @@ export default function App() {
   const [streamId, setStreamId] = useState(null);
   const [intake, setIntake] = useState(null);
   const [deliverables, setDeliverables] = useState(null);
+  const [pins, setPins] = useState([]);
   const [isReplay, setIsReplay] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -59,8 +60,9 @@ export default function App() {
     }
   }
 
-  function handleDone(sections) {
+  function handleDone(sections, deliveredPins) {
     setDeliverables(sections);
+    setPins(deliveredPins ?? []);
     setPhase('deliverables');
   }
 
@@ -84,7 +86,7 @@ export default function App() {
         />
       )}
       {phase === 'deliverables' && (
-        <DeliverablesTabs sections={deliverables} companyName={intake?.companyName} />
+        <DeliverablesTabs sections={deliverables} companyName={intake?.companyName} pins={pins} intake={intake} />
       )}
     </>
   );

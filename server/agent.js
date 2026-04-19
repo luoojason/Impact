@@ -7,25 +7,25 @@ import { globalLimit, hostLimiterFor } from './tools/pLimit.js';
 
 const anthropic = new Anthropic();
 
+const ALL_SCHEMAS      = schemas;
 const SYNTHESIS_SCHEMA = schemas.filter(s => s.name === 'generate_document');
-const DATA_SCHEMAS     = schemas.filter(s => s.name !== 'generate_document');
 
-// Switch to synthesis-only mode after this many data-tool calls
+// Switch to forced synthesis after this many data-tool calls
 const SYNTHESIS_TRIGGER_CALLS = 10;
 
 function formatIntake(intake) {
   return [
     `Company: ${intake.companyName || 'N/A'}`,
-    intake.companyDesc         ? `Description: ${intake.companyDesc}`          : null,
+    intake.companyDesc       ? `Description: ${intake.companyDesc}`                    : null,
     intake.investmentFocus?.length
-      ? `Investment Focus: ${intake.investmentFocus.join(', ')}`                : null,
-    intake.geoFocus            ? `Geographic Focus: ${intake.geoFocus}`        : null,
+      ? `Investment Focus: ${intake.investmentFocus.join(', ')}`                       : null,
+    intake.geoFocus          ? `Geographic Focus: ${intake.geoFocus}`                 : null,
     (intake.projectSizeMin || intake.projectSizeMax)
       ? `Project Size: $${intake.projectSizeMin || '?'} – $${intake.projectSizeMax || '?'} USD` : null,
-    intake.horizonYears        ? `Investment Horizon: ${intake.horizonYears} years` : null,
-    intake.riskTolerance       ? `Risk Tolerance: ${intake.riskTolerance}`     : null,
-    intake.specificRegions     ? `Specific Regions: ${intake.specificRegions}` : null,
-    intake.existingPortfolio   ? `Existing Portfolio:\n${intake.existingPortfolio}` : null,
+    intake.horizonYears      ? `Investment Horizon: ${intake.horizonYears} years`     : null,
+    intake.riskTolerance     ? `Risk Tolerance: ${intake.riskTolerance}`              : null,
+    intake.specificRegions   ? `Specific Regions: ${intake.specificRegions}`          : null,
+    intake.existingPortfolio ? `Existing Portfolio:\n${intake.existingPortfolio}`     : null,
   ].filter(Boolean).join('\n');
 }
 
@@ -69,19 +69,36 @@ export async function runAgent(streamId, intake) {
 
     while (totalIter < MAX_ITERS) {
       const inSynthesisPhase = dataCallsUsed >= SYNTHESIS_TRIGGER_CALLS;
-      const availableSchemas = inSynthesisPhase ? SYNTHESIS_SCHEMA : schemas;
 
-      const resp = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 16000,
-        system: SYSTEM_PROMPT,
-        tools: availableSchemas,
-        messages,
-      });
+      // In synthesis phase: only offer generate_document and force its use
+      const tools      = inSynthesisPhase ? SYNTHESIS_SCHEMA : ALL_SCHEMAS;
+      const toolChoice = inSynthesisPhase
+        ? { type: 'tool', name: 'generate_document' }
+        : { type: 'auto' };
+
+      // Keep session alive during long Claude calls (pings every 20s)
+      const keepAlive = setInterval(
+        () => appendEvent(streamId, { type: 'iter', data: { ping: true } }),
+        20000
+      );
+
+      let resp;
+      try {
+        resp = await anthropic.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 16000,
+          system: SYSTEM_PROMPT,
+          tools,
+          tool_choice: toolChoice,
+          messages,
+        });
+      } finally {
+        clearInterval(keepAlive);
+      }
 
       emit({ type: 'iter', data: { iter: totalIter, stop_reason: resp.stop_reason, phase: inSynthesisPhase ? 'synthesis' : 'data' } });
 
-      // Handle max_tokens mid-stream
+      // Handle token limit mid-stream
       if (resp.stop_reason === 'max_tokens') {
         messages.push({ role: 'assistant', content: resp.content });
         messages.push({ role: 'user', content: [{ type: 'text', text: 'Continue.' }] });
@@ -91,22 +108,20 @@ export async function runAgent(streamId, intake) {
 
       const toolUses = resp.content.filter(b => b.type === 'tool_use');
 
-      // Model finished without tool calls — check if document was already generated
-      if (resp.stop_reason === 'end_turn' && toolUses.length === 0) {
+      // No tool calls — nudge if document not yet produced
+      if (toolUses.length === 0) {
         const session = getSession(streamId);
         if (session?.lastDocumentSections) {
           emit({ type: 'done', data: { sections: session.lastDocumentSections, pins: session.lastDocumentPins ?? [] } });
-        } else {
-          // Force one more synthesis call
-          messages.push({ role: 'assistant', content: resp.content });
-          messages.push({ role: 'user', content: [{ type: 'text', text: 'Call generate_document now with all six sections using the data you have collected.' }] });
-          totalIter++;
-          continue;
+          return;
         }
-        break;
+        messages.push({ role: 'assistant', content: resp.content });
+        messages.push({ role: 'user', content: [{ type: 'text', text: 'Call generate_document now with all six sections using the data you have collected.' }] });
+        totalIter++;
+        continue;
       }
 
-      // Execute tool calls
+      // Execute all tool calls in parallel
       const toolResults = await Promise.all(toolUses.map(tu => {
         const toolUrl = `https://${tu.name}.impactgrid`;
         const hLimit = hostLimiterFor(toolUrl);
@@ -121,7 +136,7 @@ export async function runAgent(streamId, intake) {
             const isGenerateDoc = tu.name === 'generate_document';
             const session = getSession(streamId);
             const ctx = isGenerateDoc ? { session, emit: (evt) => appendEvent(streamId, evt) } : undefined;
-            const timeout = tu.name === 'get_conflict_data' ? 12000 : 10000;
+            const timeout = isGenerateDoc ? 60000 : 20000;
             result = await withTimeout(entry.handler(tu.input, ctx), timeout);
           }
 
@@ -140,35 +155,33 @@ export async function runAgent(streamId, intake) {
         }));
       }));
 
-      // Check if generate_document was just called successfully
+      // If generate_document just ran, emit done and stop
       const session = getSession(streamId);
       if (session?.lastDocumentSections) {
         emit({ type: 'done', data: { sections: session.lastDocumentSections, pins: session.lastDocumentPins ?? [] } });
-        break;
+        return;
       }
 
-      // Build next user message — include synthesis nudge when transitioning
+      // Build next message, nudging toward synthesis when threshold just crossed
       const nextContent = [...toolResults];
-      const nowInSynthesis = dataCallsUsed >= SYNTHESIS_TRIGGER_CALLS;
-      if (nowInSynthesis && !inSynthesisPhase) {
+      if (dataCallsUsed >= SYNTHESIS_TRIGGER_CALLS && !inSynthesisPhase) {
         nextContent.push({
           type: 'text',
-          text: 'Data gathering complete. You must now call generate_document with all six sections. No further data tools are available.',
+          text: 'All data gathered. You must now call generate_document with all six sections populated.',
         });
       }
 
       messages.push({ role: 'assistant', content: resp.content });
       messages.push({ role: 'user', content: nextContent });
-
       totalIter++;
     }
 
-    // Final safety check
+    // Fallback after MAX_ITERS
     const session = getSession(streamId);
     if (session?.lastDocumentSections) {
       emit({ type: 'done', data: { sections: session.lastDocumentSections, pins: session.lastDocumentPins ?? [] } });
     } else {
-      emit({ type: 'error', data: { where: 'budget', message: 'Analysis timed out. Please try again with a single country.' } });
+      emit({ type: 'error', data: { where: 'budget', message: 'Analysis did not complete in time. Please try again.' } });
     }
   } catch (e) {
     appendEvent(streamId, { type: 'error', data: { where: 'runAgent', message: e.message } });

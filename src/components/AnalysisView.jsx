@@ -14,7 +14,6 @@ const TOOL_LABELS = {
   get_energy_access_gap: 'Energy access',
   get_conflict_data: 'Conflict events',
   get_deforestation_data: 'Deforestation',
-  get_food_insecurity_data: 'Food insecurity',
   get_sea_level_projections: 'Sea level risk',
   get_comparable_projects: 'Comparable projects',
   generate_document: 'Document generation',
@@ -56,9 +55,10 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
     },
     done: ({ data }) => {
       if (data.replay && !replayFlagSeen) { setReplayFlagSeen(true); onReplayDetected?.(); }
-      setPins(data.pins ?? []);
+      const donePins = data.pins ?? [];
+      setPins(donePins);
       setDone(true);
-      onDone(data.sections);
+      onDone(data.sections, donePins);
     },
     error: ({ data }) => {
       setAgentError(data.message || 'Unknown error');
@@ -71,7 +71,7 @@ export default function AnalysisView({ streamId, intake, onDone, onReplayDetecte
   const passedTools = completedTools.filter((e) => e.ok === true);
   const failedTools = completedTools.filter((e) => e.ok === false);
   const pendingTools = toolEvents.filter((e) => e.ok === undefined);
-  const progress = Math.min(100, (completedTools.length / 11) * 100);
+  const progress = Math.min(100, (completedTools.length / 10) * 100);
 
   const activePinTypes = [...new Set(pins.map((p) => p.type).filter(Boolean))];
 

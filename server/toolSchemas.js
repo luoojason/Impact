@@ -73,15 +73,14 @@ export const schemas = [
   },
   {
     name: 'get_conflict_data',
-    description: 'Fetch recent armed conflict events for a country from ACLED. Requires ACLED_API_KEY and ACLED_EMAIL env vars.',
+    description: 'Fetch conflict-violence proxy indicators for a country: intentional homicide rate (World Bank) and UNHCR displacement figures. No authentication required.',
     input_schema: {
       type: 'object',
       properties: {
-        country_name: { type: 'string', description: 'Country name as recognized by ACLED (e.g. Kenya, Nigeria)' },
-        start_date: { type: 'string', description: 'Start date YYYY-MM-DD' },
-        end_date: { type: 'string', description: 'End date YYYY-MM-DD' }
+        country_iso2: { type: 'string', description: 'ISO 3166-1 alpha-2 country code (e.g. KE, NG)' },
+        country_iso3: { type: 'string', description: 'ISO 3166-1 alpha-3 country code (e.g. KEN, NGA)' }
       },
-      required: ['country_name']
+      required: ['country_iso2', 'country_iso3']
     }
   },
   {
@@ -93,17 +92,6 @@ export const schemas = [
         country_iso3: { type: 'string', description: 'ISO 3166-1 alpha-3 country code' },
         start_year: { type: 'integer', description: 'Start year (e.g. 2015)' },
         end_year: { type: 'integer', description: 'End year (e.g. 2023)' }
-      },
-      required: ['country_iso3']
-    }
-  },
-  {
-    name: 'get_food_insecurity_data',
-    description: 'Fetch IPC food insecurity classification data for a country.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        country_iso3: { type: 'string', description: 'ISO 3166-1 alpha-3 country code' }
       },
       required: ['country_iso3']
     }
@@ -169,7 +157,16 @@ export const schemas = [
               lon: { type: 'number', description: 'Longitude of the opportunity site' },
               type: { type: 'string', enum: ['solar', 'wind', 'hydro', 'geothermal', 'storage', 'transmission', 'general'], description: 'Investment type' },
               opportunity: { type: 'string', description: '2-3 sentences on why this specific location is compelling for the investment — cite actual data from tool results' },
-              risk: { type: 'string', description: '1-2 sentences on the main local risk factor at this specific location' }
+              risk: { type: 'string', description: '1-2 sentences on the main local risk factor at this specific location' },
+              sparklines: {
+                type: 'object',
+                description: 'Trend data for sparkline charts — last 5 data points oldest-to-newest, synthesised from tool results',
+                properties: {
+                  conflict: { type: 'array', items: { type: 'number' }, description: 'Conflict intensity trend (e.g. homicide rate per 100k)' },
+                  deforestation: { type: 'array', items: { type: 'number' }, description: 'Tree cover loss % per year trend' },
+                  renewable: { type: 'array', items: { type: 'number' }, description: 'Renewable resource potential trend (kWh/m²/day or m/s)' }
+                }
+              }
             },
             required: ['name', 'lat', 'lon', 'type', 'opportunity']
           }

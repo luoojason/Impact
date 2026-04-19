@@ -48,7 +48,7 @@ export function endSession(streamId) {
 function sweepIdle() {
   const now = Date.now();
   for (const [id, session] of sessions) {
-    if (now - session.lastActivity.getTime() > 60 * 1000) {
+    if (now - session.lastActivity.getTime() > 10 * 60 * 1000) {
       sessions.delete(id);
     }
   }
