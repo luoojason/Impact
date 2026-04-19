@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-l
 import L from 'leaflet';
 import { findFeature, bboxOfFeature } from '../lib/countryUtils.js';
 import GeoHeatLayer from './HeatmapLayer.jsx';
+import BubbleLayer from './BubbleLayer.jsx';
 import SparkLine from './SparkLine.jsx';
 import styles from './WorldMap.module.css';
 import 'leaflet/dist/leaflet.css';
@@ -87,6 +88,7 @@ export default function WorldMap({
 }) {
   const [geojson, setGeojson]           = useState(null);
   const [heatVisible, setHeatVisible]   = useState(initialHeatmap);
+  const [bubbleVisible, setBubbleVisible] = useState(true);
   const [panelOpen, setPanelOpen]       = useState(false);
   const [activeTypes, setActiveTypes]   = useState(() => new Set(Object.keys(TYPE_COLORS)));
   const markerRefs                      = useRef({});
@@ -148,6 +150,9 @@ export default function WorldMap({
         )}
         {heatVisible && visiblePins.length > 0 && (
           <GeoHeatLayer pins={visiblePins} visible={heatVisible} />
+        )}
+        {bubbleVisible && visiblePins.length > 0 && (
+          <BubbleLayer pins={visiblePins} visible={bubbleVisible} />
         )}
         <MapController pins={pins} markerRefs={markerRefs} mapControlRef={mapControlRef} />
         {pins.map((pin, i) => {
@@ -259,11 +264,18 @@ export default function WorldMap({
           {panelOpen && (
             <div className={styles.panelBody}>
 
-              {/* Heatmap toggle */}
+              {/* Overlay toggles */}
               <div className={styles.panelSection}>
                 <div className={styles.panelSectionLabel}>Overlay</div>
                 <label className={styles.switchRow}>
-                  <span>Suitability heatmap</span>
+                  <span>Proportional bubbles</span>
+                  <button
+                    className={`${styles.toggle} ${bubbleVisible ? styles.toggleOn : ''}`}
+                    onClick={() => setBubbleVisible((v) => !v)}
+                  />
+                </label>
+                <label className={styles.switchRow}>
+                  <span>Intensity heatmap</span>
                   <button
                     className={`${styles.toggle} ${heatVisible ? styles.toggleOn : ''}`}
                     onClick={() => setHeatVisible((v) => !v)}

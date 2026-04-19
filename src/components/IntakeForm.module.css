@@ -311,6 +311,79 @@
   color: #ffffff !important;
 }
 
+.customTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.customTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #e8f0fe;
+  border: 1px solid #3b82f6;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #1d4ed8;
+  text-transform: lowercase;
+}
+
+.customTagRemove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #1d4ed8;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.customTagRemove:hover { opacity: 1; }
+
+.customInputRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.customInput {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.customInput:focus { border-color: #0c1e3c; }
+.customInput::placeholder { color: #9ca3af; }
+
+.customAddBtn {
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.customAddBtn:hover {
+  background: #e8edf5;
+  border-color: #0c1e3c;
+  color: #0c1e3c;
+}
+
 /* ── Risk tolerance ─────────────────────────────── */
 .riskGroup {
   display: grid;

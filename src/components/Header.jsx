@@ -18,9 +18,7 @@ export default function Header() {
         <span className={styles.divider} />
         <span className={styles.tagline}>Renewable Energy Site Intelligence</span>
       </div>
-      <div className={styles.right}>
-        <span className={styles.badge}>AI Analysis</span>
-      </div>
+      <div className={styles.right} />
     </header>
   );
 }

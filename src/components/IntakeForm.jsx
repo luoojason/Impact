@@ -28,6 +28,8 @@ function GlobeIcon() {
   );
 }
 
+const PRESET_VALUES = new Set(FOCUS_OPTIONS.map((o) => o.value));
+
 export default function IntakeForm({ onSubmit, onDemo, error, submitting }) {
   const [form, setForm] = useState({
     companyName: '',
@@ -41,6 +43,7 @@ export default function IntakeForm({ onSubmit, onDemo, error, submitting }) {
     riskTolerance: 'medium',
     specificRegions: '',
   });
+  const [customInput, setCustomInput] = useState('');
 
   function toggle(value) {
     setForm((f) => ({
@@ -49,6 +52,18 @@ export default function IntakeForm({ onSubmit, onDemo, error, submitting }) {
         ? f.investmentFocus.filter((v) => v !== value)
         : [...f.investmentFocus, value],
     }));
+  }
+
+  function addCustom(e) {
+    e.preventDefault();
+    const val = customInput.trim().toLowerCase();
+    if (!val || form.investmentFocus.includes(val)) { setCustomInput(''); return; }
+    setForm((f) => ({ ...f, investmentFocus: [...f.investmentFocus, val] }));
+    setCustomInput('');
+  }
+
+  function removeCustom(val) {
+    setForm((f) => ({ ...f, investmentFocus: f.investmentFocus.filter((v) => v !== val) }));
   }
 
   function handleChange(e) {
@@ -153,6 +168,26 @@ export default function IntakeForm({ onSubmit, onDemo, error, submitting }) {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+              {form.investmentFocus.filter((v) => !PRESET_VALUES.has(v)).length > 0 && (
+                <div className={styles.customTags}>
+                  {form.investmentFocus.filter((v) => !PRESET_VALUES.has(v)).map((v) => (
+                    <span key={v} className={styles.customTag}>
+                      {v}
+                      <button type="button" className={styles.customTagRemove} onClick={() => removeCustom(v)}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className={styles.customInputRow}>
+                <input
+                  className={styles.customInput}
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addCustom(e)}
+                  placeholder="Add custom type…"
+                />
+                <button type="button" className={styles.customAddBtn} onClick={addCustom}>+</button>
               </div>
             </div>
           </div>
